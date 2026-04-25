@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OrderIn — PO Management App</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{
+  --primary:#6B21A8;--primary-dark:#4C1D95;--primary-light:#7C3AED;
+  --primary-50:#F5F3FF;--primary-100:#EDE9FE;--primary-200:#DDD6FE;
+  --success:#059669;--success-bg:#ECFDF5;
+  --warning:#D97706;--warning-bg:#FFFBEB;
+  --danger:#DC2626;--danger-bg:#FEF2F2;
+  --gray-50:#F9FAFB;--gray-100:#F3F4F6;--gray-200:#E5E7EB;--gray-400:#9CA3AF;--gray-600:#4B5563;--gray-800:#1F2937;
+}
+body{background:#f0f0f5;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px 16px}
+.phone{width:100%;max-width:400px;background:#f0f0f5;border-radius:32px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:8px solid #1a1a2e;min-height:780px;display:flex;flex-direction:column;position:relative}
+.topbar{background:var(--primary);padding:16px 16px 14px;flex-shrink:0}
+.topbar-row{display:flex;align-items:center;justify-content:space-between}
+.topbar-brand{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.topbar-brand span{color:#C4B5FD}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px}
+.topbar-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-200);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--primary-dark)}
+.nav{display:flex;background:var(--primary-dark);flex-shrink:0}
+.nav-btn{flex:1;padding:9px 4px 8px;background:none;border:none;color:rgba(255,255,255,.55);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.nav-btn.active{background:rgba(255,255,255,.12);color:#fff}
+.nav-icon{font-size:17px}
+.content{flex:1;overflow-y:auto;padding:14px 12px 80px}
+.screen{display:none}
+.screen.active{display:block}
+
+/* Cards */
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:0.5px solid var(--gray-200)}
+.card-sm{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:0.5px solid var(--gray-200)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge-masuk{background:#EDE9FE;color:#4C1D95}
+.badge-konfirmasi{background:#FFFBEB;color:#92400E}
+.badge-produksi{background:#EFF6FF;color:#1E40AF}
+.badge-siap{background:#ECFDF5;color:#065F46}
+.badge-selesai{background:var(--gray-100);color:var(--gray-600)}
+.badge-batal{background:var(--danger-bg);color:var(--danger)}
+
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:12px;padding:12px;border:0.5px solid var(--gray-200)}
+.stat-label{font-size:10px;color:var(--gray-400);margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:700;color:var(--primary)}
+.stat-sub{font-size:10px;color:var(--gray-400);margin-top:2px}
+
+/* Section title */
+.sec-title{font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:4px}
+
+/* PO Card */
+.po-card{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:9px;border:0.5px solid var(--gray-200);cursor:pointer;transition:border-color .15s}
+.po-card:hover{border-color:var(--primary-200)}
+.po-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.po-name{font-size:13px;font-weight:600;color:var(--gray-800)}
+.po-event{font-size:11px;color:var(--gray-400);margin-top:2px}
+.po-meta{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.po-date{font-size:11px;color:var(--gray-600);background:var(--gray-100);padding:3px 8px;border-radius:6px}
+.po-amount{font-size:12px;font-weight:600;color:var(--primary)}
+.progress-bar{height:4px;background:var(--gray-100);border-radius:4px;margin-top:10px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary-light);border-radius:4px;transition:width .3s}
+
+/* Buttons */
+.btn{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--primary);color:#fff;width:100%}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary-200);width:100%}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px;cursor:pointer;border:1px solid var(--gray-200);background:#fff;color:var(--gray-600);font-weight:500}
+.btn-sm.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-danger-sm{padding:6px 12px;font-size:11px;border-radius:8px;cursor:pointer;border:1px solid #FECACA;background:#FEF2F2;color:var(--danger);font-weight:500}
+
+/* Form */
+.form-group{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:9px 11px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;color:var(--gray-800);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--primary-light)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* Alert */
+.alert{padding:10px 12px;border-radius:10px;font-size:12px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px}
+.alert-warning{background:var(--warning-bg);color:#92400E;border:1px solid #FDE68A}
+.alert-success{background:var(--success-bg);color:#065F46;border:1px solid #A7F3D0}
+.alert-info{background:var(--primary-50);color:var(--primary-dark);border:1px solid var(--primary-200)}
+
+/* HPP */
+.hpp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--gray-100)}
+.hpp-row:last-child{border:none}
+.hpp-ingredient{font-size:12px;color:var(--gray-600)}
+.hpp-cost{font-size:12px;font-weight:500;color:var(--gray-800)}
+.hpp-total-bar{background:var(--primary-50);border:1px solid var(--primary-200);border-radius:10px;padding:10px 12px;margin-top:8px}
+.hpp-total-label{font-size:11px;color:var(--primary-dark);margin-bottom:2px}
+.hpp-total-val{font-size:18px;font-weight:700;color:var(--primary)}
+.margin-positive{color:var(--success);font-weight:600}
+.margin-negative{color:var(--danger);font-weight:600}
+
+/* Detail modal */
+.detail-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:100;border-radius:24px}
+.detail-panel{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:16px;max-height:85%;overflow-y:auto}
+.detail-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 14px}
+.detail-title{font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:4px}
+.status-steps{display:flex;align-items:center;margin:14px 0}
+.step{display:flex;flex-direction:column;align-items:center;flex:1}
+.step-dot{width:20px;height:20px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:10px;margin-bottom:4px;z-index:1}
+.step-dot.done{background:var(--primary);color:#fff}
+.step-dot.active{background:var(--primary-light);color:#fff;box-shadow:0 0 0 3px var(--primary-100)}
+.step-label{font-size:9px;color:var(--gray-400);text-align:center}
+.step-line{flex:1;height:2px;background:var(--gray-200);margin-bottom:18px}
+.step-line.done{background:var(--primary)}
+.info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--gray-100)}
+.info-label{font-size:12px;color:var(--gray-400)}
+.info-val{font-size:12px;font-weight:500;color:var(--gray-800);text-align:right}
+
+/* FAB */
+.fab{position:absolute;bottom:76px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--primary);border:none;color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(107,33,168,.4);z-index:50}
+
+/* Bottom nav overlap fix */
+.bottomnav{position:absolute;bottom:0;left:0;right:0}
+
+/* Form screen */
+.form-screen{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:#f0f0f5;z-index:90;border-radius:24px;overflow-y:auto}
+.form-screen.active{display:block}
+.form-header{background:var(--primary);padding:16px;display:flex;align-items:center;gap:12px}
+.form-header-title{font-size:15px;font-weight:600;color:#fff}
+.back-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0;line-height:1}
+.form-body{padding:14px}
+
+/* Chart bars */
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:80px;margin:10px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--primary-200);transition:height .3s}
+.bar.highlight{background:var(--primary)}
+.bar-label{font-size:9px;color:var(--gray-400)}
+.bar-val{font-size:9px;color:var(--gray-600);font-weight:500}
+
+/* Ingredient builder */
+.ing-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.ing-name{flex:2}
+.ing-qty{flex:1}
+.ing-price{flex:1.5}
+.ing-del{width:28px;height:28px;border-radius:6px;background:var(--danger-bg);border:none;color:var(--danger);cursor:pointer;font-size:14px;flex-shrink:0}
+
+.tag{display:inline-block;background:var(--primary-100);color:var(--primary-dark);padding:2px 8px;border-radius:6px;font-size:10px;margin:2px}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="topbar-brand">Order<span>In</span></div>
+        <div class="topbar-sub">Kelola pesanan & HPP dengan mudah</div>
+      </div>
+      <div class="topbar-avatar">AS</div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav bottomnav" style="position:relative;bottom:auto">
+    <button class="nav-btn active" onclick="showScreen('dashboard',this)">
+      <span class="nav-icon">🏠</span>Dashboard
+    </button>
+    <button class="nav-btn" onclick="showScreen('po-list',this)">
+      <span class="nav-icon">📋</span>Pesanan
+    </button>
+    <button class="nav-btn" onclick="showScreen('hpp',this)">
+      <span class="nav-icon">🧮</span>HPP
+    </button>
+    <button class="nav-btn" onclick="showScreen('laporan',this)">
+      <span class="nav-icon">📊</span>Laporan
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="alert alert-warning">
+        <span>⚠️</span>
+        <span><strong>2 pesanan</strong> deadline dalam 3 hari ke depan</span>
+      </div>
+      <div class="sec-title">Ringkasan bulan ini</div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total omzet</div>
+          <div class="stat-val">14.2jt</div>
+          <div class="stat-sub">+12% vs bulan lalu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">PO aktif</div>
+          <div class="stat-val" id="po-active-count">5</div>
+          <div class="stat-sub">3 dalam produksi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Margin rata-rata</div>
+          <div class="stat-val">38%</div>
+          <div class="stat-sub">Target: 35%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">PO selesai</div>
+          <div class="stat-val">22</div>
+          <div class="stat-sub">bulan ini</div>
+        </div>
+      </div>
+
+      <div class="sec-title">Pesanan mendekati deadline</div>
+      <div class="po-card" onclick="openDetail(0)">
+        <div class="po-card-top">
+          <div>
+            <div class="po-name">Keluarga Hendra Kusuma</div>
+            <div class="po-event">🍗 Aqiqah · 100 porsi nasi kotak</div>
+          </div>
+          <span class="badge badge-produksi">Produksi</span>
+        </div>
+        <div class="po-meta">
+          <span class="po-date">📅 25 Apr 2026</span>
+          <span class="po-amount">Rp 2.800.000</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+      </div>
+
+      <div class="po-card" onclick="openDetail(1)">
+        <div class="po-card-top">
+          <div>
+            <div class="po-name">CV Berkah Mandiri</div>
+            <div class="po-event">🍱 Nasi box rapat · 50 porsi</div>
+          </div>
+          <span class="badge badge-konfirmasi">Konfirmasi</span>
+        </div>
+        <div class="po-meta">
+          <span class="po-date">📅 26 Apr 2026</span>
+          <span class="po-amount">Rp 1.250.000</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+      </div>
+
+      <div class="sec-title">Omzet 6 bulan terakhir</div>
+      <div class="card">
+        <div class="chart-wrap" id="chart"></div>
+        <div style="font-size:10px;color:var(--gray-400);text-align:center">dalam juta rupiah</div>
+      </div>
+    </div>
+
+    <!-- PO LIST -->
+    <div class="screen" id="screen-po-list">
+      <div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px">
+        <button class="btn-sm active" onclick="filterPO('semua',this)">Semua</button>
+        <button class="btn-sm" onclick="filterPO('masuk',this)">Masuk</button>
+        <button class="btn-sm" onclick="filterPO('konfirmasi',this)">Konfirmasi</button>
+        <button class="btn-sm" onclick="filterPO('produksi',this)">Produksi</button>
+        <button class="btn-sm" onclick="filterPO('siap',this)">Siap Kirim</button>
+        <button class="btn-sm" onclick="filterPO('selesai',this)">Selesai</button>
+      </div>
+      <div id="po-list-container"></div>
+    </div>
+
+    <!-- HPP CALCULATOR -->
+    <div class="screen" id="screen-hpp">
+      <div class="alert alert-info">
+        <span>💡</span>
+        <span>Input bahan & harga satuan, HPP per porsi dihitung otomatis</span>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Nama menu</label>
+          <input class="form-input" id="hpp-menu-name" placeholder="cth: Nasi Kotak Aqiqah" value="Nasi Kotak Aqiqah"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jumlah porsi</label>
+          <input class="form-input" type="number" id="hpp-porsi" value="100" oninput="calcHPP()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Harga jual per porsi (Rp)</label>
+          <input class="form-input" type="number" id="hpp-harga-jual" value="28000" oninput="calcHPP()"/>
+        </div>
+      </div>
+
+      <div class="sec-title">Daftar bahan baku</div>
+      <div class="card">
+        <div id="ing-list"></div>
+        <button class="btn-outline" style="margin-top:8px;font-size:12px" onclick="addIngredient()">+ Tambah Bahan</button>
+      </div>
+
+      <div class="sec-title">Hasil kalkulasi HPP</div>
+      <div class="card" id="hpp-result"></div>
+    </div>
+
+    <!-- LAPORAN -->
+    <div class="screen" id="screen-laporan">
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn-sm active" onclick="setPeriod('minggu',this)">Minggu ini</button>
+        <button class="btn-sm" onclick="setPeriod('bulan',this)">Bulan ini</button>
+        <button class="btn-sm" onclick="setPeriod('all',this)">Semua</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total omzet</div>
+          <div class="stat-val">14.2jt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total HPP</div>
+          <div class="stat-val" style="color:#DC2626">8.8jt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Keuntungan</div>
+          <div class="stat-val" style="color:#059669">5.4jt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Margin</div>
+          <div class="stat-val">38%</div>
+        </div>
+      </div>
+      <div class="alert alert-success">
+        <span>✅</span>
+        <span>Margin bulan ini <strong>di atas target 35%</strong> — performa bagus!</span>
+      </div>
+      <div class="sec-title">PO terbaru</div>
+      <div id="laporan-list"></div>
+
+      <div class="sec-title">Menu terlaris</div>
+      <div class="card">
+        <div class="hpp-row"><span class="hpp-ingredient">🍗 Nasi Kotak Aqiqah</span><span class="hpp-cost">14 pesanan</span></div>
+        <div class="hpp-row"><span class="hpp-ingredient">🎂 Tumpeng Mini</span><span class="hpp-cost">8 pesanan</span></div>
+        <div class="hpp-row"><span class="hpp-ingredient">🍱 Nasi Box Rapat</span><span class="hpp-cost">6 pesanan</span></div>
+        <div class="hpp-row"><span class="hpp-ingredient">🥘 Paket Syukuran</span><span class="hpp-cost">4 pesanan</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="showForm()">+</button>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-handle"></div>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+  <!-- FORM SCREEN -->
+  <div class="form-screen" id="form-screen">
+    <div class="form-header">
+      <button class="back-btn" onclick="hideForm()">←</button>
+      <div class="form-header-title">Tambah Pesanan Baru</div>
+    </div>
+    <div class="form-body">
+      <div class="card">
+        <div class="sec-title" style="margin-top:0">Data Pemesan</div>
+        <div class="form-group">
+          <label class="form-label">Nama pemesan</label>
+          <input class="form-input" id="f-name" placeholder="Nama lengkap / perusahaan"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. WhatsApp</label>
+          <input class="form-input" id="f-wa" placeholder="08xx-xxxx-xxxx" type="tel"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis acara</label>
+          <select class="form-input" id="f-event">
+            <option>Aqiqah</option>
+            <option>Pernikahan</option>
+            <option>Rapat / Meeting</option>
+            <option>Ulang Tahun</option>
+            <option>Syukuran</option>
+            <option>Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alamat pengiriman</label>
+          <input class="form-input" id="f-address" placeholder="Alamat lengkap"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-title" style="margin-top:0">Detail Pesanan</div>
+        <div class="form-group">
+          <label class="form-label">Menu pesanan</label>
+          <select class="form-input" id="f-menu">
+            <option>Nasi Kotak Aqiqah</option>
+            <option>Tumpeng Mini</option>
+            <option>Nasi Box Rapat</option>
+            <option>Paket Syukuran</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Jumlah porsi</label>
+            <input class="form-input" type="number" id="f-qty" placeholder="100" oninput="calcFormTotal()"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Harga/porsi (Rp)</label>
+            <input class="form-input" type="number" id="f-price" placeholder="28000" oninput="calcFormTotal()"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total pesanan</label>
+          <div style="background:var(--primary-50);border-radius:10px;padding:10px 12px;font-size:15px;font-weight:700;color:var(--primary)" id="f-total">Rp 0</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tanggal acara</label>
+            <input class="form-input" type="date" id="f-date"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jam pengiriman</label>
+            <input class="form-input" type="time" id="f-time" value="08:00"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catatan khusus</label>
+          <input class="form-input" id="f-note" placeholder="cth: tidak pakai sambal"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-title" style="margin-top:0">Pembayaran</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">DP / uang muka (Rp)</label>
+            <input class="form-input" type="number" id="f-dp" placeholder="0" oninput="calcFormTotal()"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sisa bayar</label>
+            <div style="background:var(--gray-50);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;color:var(--danger)" id="f-sisa">Rp 0</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Metode pembayaran DP</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-sm active" id="pay-cash" onclick="setPayForm('cash')">💵 Cash</button>
+            <button class="btn-sm" id="pay-transfer" onclick="setPayForm('transfer')">🏦 Transfer</button>
+            <button class="btn-sm" id="pay-qris" onclick="setPayForm('qris')">📱 QRIS</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="savePO()">Simpan Pesanan</button>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div class="detail-overlay" id="success-overlay">
+    <div class="detail-panel" style="text-align:center;padding:28px 20px">
+      <div style="font-size:48px;margin-bottom:12px">🎉</div>
+      <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:6px">Pesanan Tersimpan!</div>
+      <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px" id="success-msg"></div>
+      <button class="btn btn-primary" onclick="closeSuccess()">Lihat Daftar Pesanan</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const poData = [
+  {id:0,name:'Keluarga Hendra Kusuma',wa:'08123456789',event:'Aqiqah',menu:'Nasi Kotak Aqiqah',qty:100,price:28000,date:'2026-04-25',time:'09:00',address:'Jl. Mawar No.12, Bekasi',note:'Extra sambal',dp:1000000,payMethod:'Transfer',status:'produksi',statusIdx:2},
+  {id:1,name:'CV Berkah Mandiri',wa:'08198765432',event:'Rapat / Meeting',menu:'Nasi Box Rapat',qty:50,price:25000,date:'2026-04-26',time:'11:00',address:'Jl. Sudirman No.88, Jakarta',note:'-',dp:500000,payMethod:'Transfer',status:'konfirmasi',statusIdx:1},
+  {id:2,name:'Ibu Sari Dewi',wa:'08211223344',event:'Ulang Tahun',menu:'Tumpeng Mini',qty:1,price:350000,date:'2026-05-02',time:'12:00',address:'Jl. Kenanga No.5, Depok',note:'Topper nama Zahra',dp:175000,payMethod:'QRIS',status:'masuk',statusIdx:0},
+  {id:3,name:'Pak Budi Santoso',wa:'08277889900',event:'Syukuran',menu:'Paket Syukuran',qty:80,price:32000,date:'2026-04-20',time:'08:00',address:'Jl. Melati No.7, Tangerang',note:'-',dp:1280000,payMethod:'Cash',status:'selesai',statusIdx:4},
+  {id:4,name:'PT Maju Jaya',wa:'08155443322',event:'Rapat / Meeting',menu:'Nasi Box Rapat',qty:120,price:25000,date:'2026-04-22',time:'10:00',address:'Gedung Menara Lt.5, Jakarta',note:'Vegetarian 20 porsi',dp:1500000,payMethod:'Transfer',status:'siap',statusIdx:3},
+];
+
+const ingredients = [
+  {name:'Nasi putih',qty:0.25,unit:'kg',price:8000},
+  {name:'Ayam goreng',qty:1,unit:'pcs',price:7500},
+  {name:'Tempe orek',qty:0.1,unit:'kg',price:2000},
+  {name:'Sayur lalapan',qty:0.05,unit:'kg',price:1500},
+  {name:'Sambal',qty:0.03,unit:'kg',price:1000},
+  {name:'Box nasi',qty:1,unit:'pcs',price:1200},
+];
+
+const statusMap = {masuk:'badge-masuk',konfirmasi:'badge-konfirmasi',produksi:'badge-produksi',siap:'badge-siap',selesai:'badge-selesai',batal:'badge-batal'};
+const statusLabel = {masuk:'Masuk',konfirmasi:'Konfirmasi',produksi:'Produksi',siap:'Siap Kirim',selesai:'Selesai',batal:'Batal'};
+const statusSteps = ['Masuk','Konfirmasi','Produksi','Siap Kirim','Selesai'];
+let currentFilter = 'semua';
+let payFormMethod = 'cash';
+
+function fmt(n){return 'Rp '+Math.round(n).toLocaleString('id-ID')}
+function pct(n){return Math.round(n)+'%'}
+
+function showScreen(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='po-list') renderPOList();
+  if(id==='hpp') renderHPP();
+  if(id==='laporan') renderLaporan();
+}
+
+function renderPOList(){
+  const filtered = currentFilter==='semua'?poData:poData.filter(p=>p.status===currentFilter);
+  const c = document.getElementById('po-list-container');
+  if(!filtered.length){c.innerHTML='<div style="text-align:center;padding:30px;color:var(--gray-400);font-size:13px">Tidak ada pesanan</div>';return;}
+  c.innerHTML = filtered.map(p=>{
+    const total = p.qty*p.price;
+    const prog = ((p.statusIdx+1)/5*100);
+    return `<div class="po-card" onclick="openDetail(${p.id})">
+      <div class="po-card-top">
+        <div>
+          <div class="po-name">${p.name}</div>
+          <div class="po-event">${p.event} · ${p.qty} porsi ${p.menu}</div>
+        </div>
+        <span class="badge ${statusMap[p.status]}">${statusLabel[p.status]}</span>
+      </div>
+      <div class="po-meta">
+        <span class="po-date">📅 ${formatDate(p.date)}</span>
+        <span class="po-amount">${fmt(total)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function filterPO(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('#screen-po-list .btn-sm').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPOList();
+}
+
+function formatDate(d){
+  const dt=new Date(d);
+  return dt.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function openDetail(id){
+  const p = poData.find(x=>x.id===id);
+  if(!p) return;
+  const total = p.qty*p.price;
+  const sisa = total-p.dp;
+  const stepsHTML = statusSteps.map((s,i)=>{
+    const done = i<p.statusIdx;
+    const active = i===p.statusIdx;
+    const lineClass = i<p.statusIdx?'done':'';
+    const dotClass = done?'done':active?'active':'';
+    return `<div class="step">
+      <div class="step-dot ${dotClass}">${done?'✓':i+1}</div>
+      <div class="step-label">${s}</div>
+    </div>${i<4?`<div class="step-line ${lineClass}"></div>`:''}`;
+  }).join('');
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-title">${p.name}</div>
+    <span class="badge ${statusMap[p.status]}" style="margin-bottom:12px">${statusLabel[p.status]}</span>
+    <div class="status-steps">${stepsHTML}</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      ${statusSteps.map((s,i)=>i!==p.statusIdx?`<button class="btn-sm" onclick="updateStatus(${p.id},${i})">${s}</button>`:'').filter(Boolean).join('')}
+    </div>
+    <div class="sec-title">Info Pesanan</div>
+    <div class="info-row"><span class="info-label">Jenis acara</span><span class="info-val">${p.event}</span></div>
+    <div class="info-row"><span class="info-label">Menu</span><span class="info-val">${p.menu}</span></div>
+    <div class="info-row"><span class="info-label">Jumlah porsi</span><span class="info-val">${p.qty} porsi</span></div>
+    <div class="info-row"><span class="info-label">Tanggal acara</span><span class="info-val">${formatDate(p.date)} · ${p.time}</span></div>
+    <div class="info-row"><span class="info-label">Alamat</span><span class="info-val" style="max-width:55%;text-align:right">${p.address}</span></div>
+    <div class="info-row"><span class="info-label">Catatan</span><span class="info-val">${p.note}</span></div>
+    <div class="sec-title" style="margin-top:12px">Pembayaran</div>
+    <div class="info-row"><span class="info-label">Total pesanan</span><span class="info-val" style="color:var(--primary);font-weight:700">${fmt(total)}</span></div>
+    <div class="info-row"><span class="info-label">DP dibayar</span><span class="info-val" style="color:var(--success)">${fmt(p.dp)}</span></div>
+    <div class="info-row"><span class="info-label">Sisa pembayaran</span><span class="info-val" style="color:${sisa>0?'var(--danger)':'var(--success)'};font-weight:600">${sisa>0?fmt(sisa):'Lunas ✓'}</span></div>
+    <div class="info-row"><span class="info-label">Metode DP</span><span class="info-val">${p.payMethod}</span></div>
+    <div style="height:10px"></div>
+  `;
+  document.getElementById('detail-overlay').style.display='block';
+}
+
+function updateStatus(id,idx){
+  const p = poData.find(x=>x.id===id);
+  const keys = ['masuk','konfirmasi','produksi','siap','selesai'];
+  p.status = keys[idx];
+  p.statusIdx = idx;
+  closeDetail();
+  openDetail(id);
+  renderPOList();
+  document.getElementById('po-active-count').textContent = poData.filter(p=>p.status!=='selesai'&&p.status!=='batal').length;
+}
+
+function closeDetail(e){
+  if(e&&e.target!==document.getElementById('detail-overlay')) return;
+  document.getElementById('detail-overlay').style.display='none';
+}
+
+function renderHPP(){
+  renderIngredients();
+  calcHPP();
+}
+
+function renderIngredients(){
+  document.getElementById('ing-list').innerHTML = ingredients.map((ing,i)=>`
+    <div class="ing-row">
+      <input class="form-input ing-name" value="${ing.name}" placeholder="Bahan" oninput="ingredients[${i}].name=this.value;calcHPP()"/>
+      <input class="form-input ing-qty" type="number" value="${ing.qty}" step="0.01" oninput="ingredients[${i}].qty=parseFloat(this.value)||0;calcHPP()"/>
+      <input class="form-input ing-price" type="number" value="${ing.price}" oninput="ingredients[${i}].price=parseFloat(this.value)||0;calcHPP()"/>
+      <button class="ing-del" onclick="removeIng(${i})">×</button>
+    </div>
+    <div style="font-size:9px;color:var(--gray-400);margin:-4px 0 6px 2px">${ing.name||'Bahan'}: ${ing.qty} × Rp${ing.price.toLocaleString('id-ID')} = Rp${Math.round(ing.qty*ing.price).toLocaleString('id-ID')}/porsi</div>
+  `).join('');
+}
+
+function addIngredient(){
+  ingredients.push({name:'',qty:1,unit:'pcs',price:0});
+  renderIngredients();
+  calcHPP();
+}
+
+function removeIng(i){
+  ingredients.splice(i,1);
+  renderIngredients();
+  calcHPP();
+}
+
+function calcHPP(){
+  const porsi = parseInt(document.getElementById('hpp-porsi').value)||1;
+  const hargaJual = parseInt(document.getElementById('hpp-harga-jual').value)||0;
+  const hppPerPorsi = ingredients.reduce((sum,ing)=>sum+ing.qty*ing.price,0);
+  const hppTotal = hppPerPorsi*porsi;
+  const totalRevenue = hargaJual*porsi;
+  const margin = hargaJual>0?((hargaJual-hppPerPorsi)/hargaJual*100):0;
+  const profit = totalRevenue-hppTotal;
+  const marginClass = margin>=30?'margin-positive':'margin-negative';
+
+  document.getElementById('hpp-result').innerHTML = `
+    <div class="hpp-row"><span class="hpp-ingredient">HPP per porsi</span><span class="hpp-cost">${fmt(hppPerPorsi)}</span></div>
+    <div class="hpp-row"><span class="hpp-ingredient">Harga jual per porsi</span><span class="hpp-cost">${fmt(hargaJual)}</span></div>
+    <div class="hpp-row"><span class="hpp-ingredient">Margin per porsi</span><span class="hpp-cost ${marginClass}">${pct(margin)}</span></div>
+    <div class="hpp-row"><span class="hpp-ingredient">Total HPP (${porsi} porsi)</span><span class="hpp-cost">${fmt(hppTotal)}</span></div>
+    <div class="hpp-row"><span class="hpp-ingredient">Total revenue</span><span class="hpp-cost">${fmt(totalRevenue)}</span></div>
+    <div class="hpp-total-bar">
+      <div class="hpp-total-label">Estimasi keuntungan bersih</div>
+      <div class="hpp-total-val ${profit>=0?'margin-positive':'margin-negative'}">${fmt(profit)}</div>
+      <div style="font-size:11px;color:var(--gray-400);margin-top:4px">Margin: <span class="${marginClass}">${pct(margin)}</span> ${margin>=30?'✅ Sehat':'⚠️ Di bawah 30%'}</div>
+    </div>
+  `;
+}
+
+function renderLaporan(){
+  document.getElementById('laporan-list').innerHTML = poData.slice(0,4).map(p=>{
+    const total=p.qty*p.price;
+    return `<div class="card-sm">
+      <div class="row" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--gray-800)">${p.name}</div>
+          <div style="font-size:11px;color:var(--gray-400)">${p.menu} · ${p.qty} porsi</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;font-weight:600;color:var(--primary)">${fmt(total)}</div>
+          <span class="badge ${statusMap[p.status]}" style="font-size:9px">${statusLabel[p.status]}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderChart(){
+  const data = [8.2,9.5,11.1,10.8,13.4,14.2];
+  const months = ['Nov','Des','Jan','Feb','Mar','Apr'];
+  const max = Math.max(...data);
+  document.getElementById('chart').innerHTML = data.map((v,i)=>`
+    <div class="bar-col">
+      <div class="bar-val">${v}jt</div>
+      <div class="bar ${i===5?'highlight':''}" style="height:${Math.round(v/max*70)}px"></div>
+      <div class="bar-label">${months[i]}</div>
+    </div>
+  `).join('');
+}
+
+function showForm(){
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate()+7);
+  document.getElementById('f-date').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('form-screen').classList.add('active');
+}
+
+function hideForm(){
+  document.getElementById('form-screen').classList.remove('active');
+}
+
+function calcFormTotal(){
+  const qty = parseInt(document.getElementById('f-qty').value)||0;
+  const price = parseInt(document.getElementById('f-price').value)||0;
+  const dp = parseInt(document.getElementById('f-dp').value)||0;
+  const total = qty*price;
+  const sisa = total-dp;
+  document.getElementById('f-total').textContent = fmt(total);
+  document.getElementById('f-sisa').textContent = fmt(Math.max(0,sisa));
+}
+
+function setPayForm(m){
+  payFormMethod=m;
+  ['cash','transfer','qris'].forEach(x=>{
+    document.getElementById('pay-'+x).classList.toggle('active',x===m);
+  });
+}
+
+function savePO(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){document.getElementById('f-name').focus();return;}
+  const qty = parseInt(document.getElementById('f-qty').value)||0;
+  const price = parseInt(document.getElementById('f-price').value)||0;
+  if(!qty||!price){alert('Isi jumlah porsi dan harga!');return;}
+  const newPO = {
+    id:poData.length,
+    name,
+    wa:document.getElementById('f-wa').value,
+    event:document.getElementById('f-event').value,
+    menu:document.getElementById('f-menu').value,
+    qty,price,
+    date:document.getElementById('f-date').value,
+    time:document.getElementById('f-time').value,
+    address:document.getElementById('f-address').value,
+    note:document.getElementById('f-note').value||'-',
+    dp:parseInt(document.getElementById('f-dp').value)||0,
+    payMethod:payFormMethod==='cash'?'Cash':payFormMethod==='transfer'?'Transfer':'QRIS',
+    status:'masuk',statusIdx:0
+  };
+  poData.unshift(newPO);
+  hideForm();
+  document.getElementById('success-msg').textContent = `Pesanan dari ${name} untuk ${qty} porsi ${newPO.menu} berhasil dicatat.`;
+  document.getElementById('success-overlay').style.display='block';
+}
+
+function closeSuccess(){
+  document.getElementById('success-overlay').style.display='none';
+  document.querySelectorAll('.nav-btn')[1].click();
+}
+
+function setPeriod(p,btn){
+  document.querySelectorAll('#screen-laporan .btn-sm').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+renderChart();
+renderHPP();
+</script>
+</body>
+</html>
