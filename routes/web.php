@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [\App\Http\Controllers\OrderController::class, 'index'])->name('pesanan');
 
     Route::get('/laporan', [\App\Http\Controllers\ReportController::class, 'index'])->name('laporan');
+    Route::get('/laporan/export', [\App\Http\Controllers\ReportController::class, 'exportExcel'])->name('laporan.export');
 
     Route::get('/form-po', [\App\Http\Controllers\OrderController::class, 'create'])->name('form-po');
     Route::post('/form-po', [\App\Http\Controllers\OrderController::class, 'store'])->name('form-po.store');
@@ -38,4 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
     Route::delete('/menu/{id}', [MenuController::class, 'destroy'])->name('menu.destroy');
     Route::post('/menu/{id}/hpp', [MenuController::class, 'updateHpp'])->name('menu.hpp.update');
+    Route::post('/menu/master-addons', [MenuController::class, 'updateMasterAddons'])->name('menu.addons.update');
+    Route::post('/menu/master-addons/store', [MenuController::class, 'storeMasterAddon'])->name('menu.addons.store');
+    Route::delete('/menu/master-addons/{id}', [MenuController::class, 'destroyMasterAddon'])->name('menu.addons.destroy');
 });

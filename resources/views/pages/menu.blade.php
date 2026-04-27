@@ -20,6 +20,11 @@
                     :class="activeTab==='hpp' ? 'bg-[#6C3DE3] text-white shadow-[0_2px_8px_-2px_rgba(108,61,227,0.4)]' : 'bg-gray-50 text-gray-500 border border-gray-100'">
                     Kalkulator HPP
                 </button>
+                <button @click="$dispatch('menu-tab-change', 'addon')"
+                    class="px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all"
+                    :class="activeTab==='addon' ? 'bg-[#6C3DE3] text-white shadow-[0_2px_8px_-2px_rgba(108,61,227,0.4)]' : 'bg-gray-50 text-gray-500 border border-gray-100'">
+                    Kelola Add-on
+                </button>
             </div>
         </div>
     </div>
@@ -67,6 +72,17 @@
                                 } else {
                                     this.hppIngredients = [];
                                 }
+                            }
+                        },
+
+                        init() {
+                            const params = new URLSearchParams(window.location.search);
+                            const tab = params.get("tab");
+                            if (tab) {
+                                this.activeTab = tab;
+                                this.$nextTick(() => {
+                                    window.dispatchEvent(new CustomEvent("menu-tab-change", { detail: tab }));
+                                });
                             }
                         },
 
@@ -372,5 +388,87 @@
                 </button>
             </div>
         </form>
+
+        <!-- TAB: KELOLA ADD-ON (MASTER) -->
+        <div x-show="activeTab === 'addon'" style="display:none" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+            class="space-y-6">
+
+            <!-- Form Tambah Add-on -->
+            <div class="bg-white rounded-xl p-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-50"
+                 x-data="{addonPrice: 0}">
+                <form action="{{ route('menu.addons.store') }}" method="POST">
+                    @csrf
+                    <h2 class="text-[13px] font-extrabold text-gray-800 mb-3">Tambah Master Add-on</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">Nama Add-on</label>
+                            <input type="text" name="name" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-[12px] font-semibold text-gray-800 focus:outline-none focus:border-[#6C3DE3] transition-colors"
+                                placeholder="Misal: Extra Sambal">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">Tambahan Harga (Rp)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-gray-600 font-bold">Rp</span>
+                                <input type="hidden" name="price" :value="addonPrice">
+                                <input type="text" :value="format(addonPrice)" @input="mask($event, $data, 'addonPrice')" required
+                                    class="w-full bg-white border border-gray-200 rounded-xl pl-8 pr-4 py-2 text-[12px] font-extrabold text-gray-800 focus:outline-none focus:border-[#6C3DE3] transition-colors"
+                                    placeholder="0">
+                            </div>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-2.5 mt-2 bg-[#6C3DE3] hover:bg-violet-700 text-white font-bold text-[12px] rounded-xl active:scale-[0.98] transition-all">
+                            Simpan Master Add-on
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Daftar Master Add-on -->
+            <div>
+                <h2 class="text-[13px] font-extrabold text-gray-800 mb-3 px-1">Master Add-on Tersimpan ({{ $addons->count() }})</h2>
+                <div class="space-y-3">
+                    @forelse($addons as $addon)
+                        <div class="bg-white rounded-xl p-3 flex items-center gap-3 shadow-sm border border-gray-100/60">
+                            <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-[#6C3DE3] shrink-0">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-[12px] font-bold text-gray-800 truncate">{{ $addon->name }}</h4>
+                                <p class="text-[10px] text-[#6C3DE3] font-bold">
+                                    + Rp {{ number_format($addon->price, 0, ',', '.') }}
+                                </p>
+                            </div>
+                            <form action="{{ route('menu.addons.destroy', $addon->id) }}" method="POST"
+                                onsubmit="return confirm('Yakin hapus add-on ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="w-8 h-8 bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-500 rounded-xl flex items-center justify-center transition-colors">
+                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    @empty
+                        <div class="bg-white rounded-xl p-8 text-center text-gray-400 border border-gray-50">
+                            <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-[12px] font-bold text-gray-600">Belum ada master add-on</p>
+                            <p class="text-[10px] mt-1 text-gray-400">Tambahkan di atas untuk muncul sebagai pilihan di pesanan</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
     </div>
 @endsection

@@ -29,4 +29,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }
+
+    public function addons()
+    {
+        return $this->hasMany(MenuAddon::class);
+    }
 }

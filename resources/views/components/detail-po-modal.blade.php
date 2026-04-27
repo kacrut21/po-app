@@ -149,6 +149,16 @@
                                         <span class="text-[12px] text-gray-500 font-medium">Jumlah & Harga</span>
                                         <span class="text-[12px] font-semibold text-gray-800" x-text="item.qty + ' Porsi x Rp ' + format(item.price)"></span>
                                     </div>
+                                    <template x-if="item.addons && item.addons.length > 0">
+                                        <div class="mt-1.5 pl-4 border-l-2 border-violet-100 space-y-1">
+                                            <template x-for="ad in item.addons" :key="ad.id">
+                                                <div class="flex justify-between items-center">
+                                                    <span class="text-[11px] text-violet-600 font-bold" x-text="'+ ' + ad.name"></span>
+                                                    <span class="text-[11px] text-gray-500 font-medium" x-text="'Rp ' + format(ad.price)"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </template>

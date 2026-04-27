@@ -17,7 +17,8 @@ class MenuController extends Controller
     public function index()
     {
         $menus = $this->menuService->getAllMenus();
-        return view('pages.menu', compact('menus'));
+        $addons = $this->menuService->getAllAddons();
+        return view('pages.menu', compact('menus', 'addons'));
     }
 
     public function store(Request $request)
@@ -59,5 +60,37 @@ class MenuController extends Controller
         $this->menuService->syncHpp($id, $validated);
 
         return redirect()->route('menu')->with('success', 'Setup HPP berhasil disimpan!');
+    }
+
+    public function updateMasterAddons(Request $request)
+    {
+        $validated = $request->validate([
+            'addons' => 'nullable|array',
+            'addons.*.name' => 'nullable|string',
+            'addons.*.price' => 'nullable|numeric|min:0',
+        ]);
+
+        $this->menuService->syncMasterAddons($validated);
+
+        return redirect()->route('menu', ['tab' => 'addon'])->with('success', 'Master Add-ons berhasil diperbarui!');
+    }
+
+    public function storeMasterAddon(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $this->menuService->storeMasterAddon($validated);
+
+        return redirect()->route('menu', ['tab' => 'addon'])->with('success', 'Add-on berhasil ditambahkan!');
+    }
+
+    public function destroyMasterAddon($id)
+    {
+        $this->menuService->deleteMasterAddon($id);
+        
+        return redirect()->route('menu', ['tab' => 'addon'])->with('success', 'Add-on berhasil dihapus!');
     }
 }

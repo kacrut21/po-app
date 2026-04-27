@@ -44,7 +44,14 @@ class OrderController extends Controller
                     return [
                         'menu' => $item->menu ? $item->menu->name : 'Menu Terhapus',
                         'qty' => $item->quantity,
-                        'price' => $item->price
+                        'price' => $item->price,
+                        'addons' => $item->addons->map(function ($a) {
+                            return [
+                                'id' => $a->menu_addon_id,
+                                'name' => $a->menuAddon ? $a->menuAddon->name : 'Addon Terhapus',
+                                'price' => $a->price
+                            ];
+                        })
                     ];
                 })
             ];
@@ -56,7 +63,8 @@ class OrderController extends Controller
     public function create()
     {
         $menus = $this->menuService->getAllMenus(true); // active menus only
-        return view('pages.form-po', compact('menus'));
+        $addons = $this->menuService->getAllAddons();
+        return view('pages.form-po', compact('menus', 'addons'));
     }
 
     public function store(Request $request)
@@ -75,6 +83,8 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.menu' => 'required|string',
             'items.*.qty' => 'required|numeric|min:1',
+            'items.*.addons' => 'nullable|array',
+            'items.*.addons.*.id' => 'required|exists:menu_addons,id',
         ]);
 
         $this->orderService->createOrder($validated);
@@ -85,8 +95,9 @@ class OrderController extends Controller
     public function edit($id)
     {
         $order = $this->orderService->getOrderById($id);
-        $menus = $this->menuService->getAllMenus(true);
-        return view('pages.form-po', compact('menus', 'order'));
+        $menus = $this->menuService->getAllMenus(false); // include inactive for edit
+        $addons = $this->menuService->getAllAddons();
+        return view('pages.form-po', compact('menus', 'order', 'addons'));
     }
 
     public function update(Request $request, $id)
@@ -105,6 +116,8 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.menu' => 'required|string',
             'items.*.qty' => 'required|numeric|min:1',
+            'items.*.addons' => 'nullable|array',
+            'items.*.addons.*.id' => 'required|exists:menu_addons,id',
         ]);
 
         $this->orderService->updateOrder($id, $validated);

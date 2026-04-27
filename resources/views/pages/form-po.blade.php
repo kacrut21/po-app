@@ -17,24 +17,36 @@
 @section('content')
     {{-- Inject menus and edit order data --}}
     <script>
-        window.__menus = @json($menus->map(fn($m) => array_merge($m->toArray(), ['price' => $m->selling_price])));
+        window.__menus = {!! json_encode($menus->map(fn($m) => array_merge($m->toArray(), [
+            'price' => $m->selling_price
+        ]))) !!};
+        window.__addons = {!! json_encode($addons) !!};
         @isset($order)
             window.__editOrder = {
                 id: {{ $order->id }},
-                name: @json($order->customer_name),
-                wa: @json($order->customer_phone ?? ''),
-                address: @json($order->delivery_address ?? ''),
-                event: @json($order->event_type ?? 'Aqiqah'),
-                date: @json(substr($order->delivery_date, 0, 10)),
-                time: @json(substr($order->delivery_date, 11, 5)),
-                note: @json($order->notes ?? ''),
+                name: {!! json_encode($order->customer_name) !!},
+                wa: {!! json_encode($order->customer_phone ?? '') !!},
+                address: {!! json_encode($order->delivery_address ?? '') !!},
+                event: {!! json_encode($order->event_type ?? 'Aqiqah') !!},
+                date: {!! json_encode(substr($order->delivery_date, 0, 10)) !!},
+                time: {!! json_encode(substr($order->delivery_date, 11, 5)) !!},
+                note: {!! json_encode($order->notes ?? '') !!},
                 ongkir: {{ $order->shipping_fee ?? 0 }},
                 dp: {{ $order->down_payment ?? 0 }},
-                payMethod: @json($order->payment_method ?? 'Cash'),
-                items: @json($order->items->map(fn($i) => ['menu' => $i->menu?->name ?? '', 'qty' => $i->quantity, 'price' => $i->price]))
+                payMethod: {!! json_encode($order->payment_method ?? 'Cash') !!},
+                items: {!! json_encode($order->items->map(fn($i) => [
+                    'menu' => $i->menu?->name ?? '', 
+                    'qty' => $i->quantity, 
+                    'price' => $i->price,
+                    'addons' => $i->addons->map(fn($a) => [
+                        'id' => $a->menu_addon_id,
+                        'name' => $a->menuAddon?->name ?? 'Addon Terhapus',
+                        'price' => $a->price
+                    ])->values()
+                ])) !!}
             };
         @else
-            window.__editOrder = null; // Clear any stale edit data
+            window.__editOrder = null;
         @endisset
     </script>
     <form method="POST" action="{{ isset($order) ? route('form-po.update', $order->id) : route('form-po.store') }}"
@@ -139,10 +151,10 @@
                                         <div class="w-2/3 relative">
                                             <select x-model="item.menu" @change="updateItemPrice(index)"
                                                 class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-[12px] font-semibold text-gray-800 focus:outline-none focus:border-[#6C3DE3] transition-colors appearance-none pr-8">
+                                                <option value="" disabled>Pilih Menu...</option>
                                                 <template x-for="m in menus" :key="m.name">
-                                                    <option :value="m.name" x-text="m.name"></option>
+                                                    <option :value="m.name" x-text="m.name" :selected="item.menu === m.name"></option>
                                                 </template>
-                                                <option x-show="menus.length === 0" value="">Pilih Menu...</option>
                                             </select>
                                             <svg class="h-3.5 w-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -150,18 +162,43 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-between gap-3">
-                                        <div class="flex items-center gap-2 flex-1">
-                                            <label class="text-[12px] font-medium text-gray-500 w-1/2">Porsi</label>
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-[12px] font-medium text-gray-500 w-1/3">Porsi</label>
+                                        <div class="w-2/3">
                                             <input type="number" x-model.number="item.qty" min="1"
-                                                class="w-1/2 bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-[12px] font-semibold text-gray-800 focus:outline-none focus:border-[#6C3DE3] transition-colors text-center">
+                                                class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-bold text-gray-800 focus:outline-none focus:border-[#6C3DE3] transition-colors">
                                         </div>
-                                        <div class="flex items-center gap-2 flex-1 justify-end">
-                                            <label
-                                                class="text-[10px] font-medium text-gray-500 whitespace-nowrap">Harga</label>
-                                            <span class="text-[11px] font-semibold text-gray-600"
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-[12px] font-medium text-gray-500 w-1/3">Harga Satuan</label>
+                                        <div class="w-2/3 text-right">
+                                            <span class="text-[13px] font-extrabold text-[#6C3DE3]"
                                                 x-text="'Rp '+format(item.price)"></span>
                                         </div>
+                                    </div>
+
+                                    <!-- Add-on Section -->
+                                    <div x-show="masterAddons && masterAddons.length > 0 && item.menu" class="mt-4 pt-3 border-t border-gray-100">
+                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Add-ons (Opsional)</label>
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="addon in masterAddons" :key="addon.id">
+                                                <button type="button" @click="toggleAddon(index, addon)"
+                                                    class="px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5"
+                                                    :class="item.addons?.find(a => a.name === addon.name) 
+                                                        ? 'bg-[#6C3DE3] text-white border-[#6C3DE3] shadow-md' 
+                                                        : 'bg-white text-gray-500 border-gray-100 hover:border-violet-200 shadow-sm'">
+                                                    <svg x-show="item.addons?.find(a => a.name === addon.name)" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    <span x-text="addon.name"></span>
+                                                    <span class="opacity-70 font-medium" x-text="'+Rp' + format(addon.price)"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                        <!-- Hidden inputs for addons -->
+                                        <template x-for="(ad, adIdx) in (item.addons || [])" :key="adIdx">
+                                            <input type="hidden" :name="'items['+index+'][addons]['+adIdx+'][id]'" :value="ad.id">
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -169,7 +206,7 @@
                     </div>
 
                     <button type="button"
-                        @click="formPo.items.push({menu: menus.length ? menus[0].name : '', qty:10, price: menus.length ? menus[0].price : 0})"
+                        @click="formPo.items.push({menu: '', qty:10, price: 0, addons: []})"
                         class="w-full py-2 border border-dashed border-[#6C3DE3] text-[#6C3DE3] rounded-xl text-[12px] font-bold bg-[#F8F5FF] hover:bg-violet-100 transition-colors flex items-center justify-center gap-1.5">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />

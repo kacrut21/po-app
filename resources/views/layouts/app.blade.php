@@ -199,12 +199,13 @@ document.addEventListener('alpine:init', () => {
         isEditing: false,
         formPo: {
             id: null, name:'', wa:'', event:'Aqiqah', address:'',
-            items:[{menu:'', qty:100, price:0}],
+            items:[{menu:'', qty:100, price:0, addons:[]}],
             date:'', time:'', note:'', dp:0, ongkir:0, payMethod:'Transfer'
         },
 
         poData: [],
         menus: [],
+        masterAddons: [],
 
         init() {
             // Prefer server-side data if injected (from PHP controller via Blade)
@@ -222,10 +223,16 @@ document.addEventListener('alpine:init', () => {
                 this.menus = savedMenus ? JSON.parse(savedMenus) : [];
             }
 
+            if (window.__addons) {
+                this.masterAddons = window.__addons;
+            }
+
             // Pre-fill form for edit mode if data is injected
             if (window.__editOrder) {
-                this.isEditing = true;
-                this.formPo = window.__editOrder;
+                this.$nextTick(() => {
+                    this.isEditing = true;
+                    this.formPo = window.__editOrder;
+                });
             }
         },
 
@@ -236,13 +243,36 @@ document.addEventListener('alpine:init', () => {
 
         calculateTotal(po) {
             if (!po || !po.items) return 0;
-            const itemsTotal = po.items.reduce((s, i) => s + ((parseInt(i.qty)||0) * (parseInt(i.price)||0)), 0);
+            const itemsTotal = po.items.reduce((s, i) => {
+                const itemBase = (parseInt(i.qty)||0) * (parseInt(i.price)||0);
+                const addonsTotal = (i.addons || []).reduce((sum, a) => sum + ((parseInt(i.qty)||0) * (parseInt(a.price)||0)), 0);
+                return s + itemBase + addonsTotal;
+            }, 0);
             return itemsTotal + (parseInt(po.ongkir) || 0);
         },
 
         updateItemPrice(index) {
             const m = this.menus.find(m => m.name === this.formPo.items[index].menu);
-            if (m) this.formPo.items[index].price = m.price;
+            if (m) {
+                this.formPo.items[index].price = m.price;
+                this.formPo.items[index].addons = []; // Reset addons when menu changes
+            }
+        },
+
+        toggleAddon(itemIndex, addon) {
+            const item = this.formPo.items[itemIndex];
+            if (!item.addons) item.addons = [];
+            
+            const existingIdx = item.addons.findIndex(a => a.name === addon.name);
+            if (existingIdx !== -1) {
+                item.addons.splice(existingIdx, 1);
+            } else {
+                item.addons.push({
+                    id: addon.id,
+                    name: addon.name,
+                    price: addon.price
+                });
+            }
         },
 
         generatePoNumber() {
@@ -293,7 +323,7 @@ document.addEventListener('alpine:init', () => {
             this.isEditing = false;
             this.formPo = {
                 id: null, name:'', wa:'', event:'Aqiqah', address:'',
-                items:[{menu: this.menus.length ? this.menus[0].name : '', qty:100, price: this.menus.length ? this.menus[0].price : 0}],
+                items:[{menu: this.menus.length ? this.menus[0].name : '', qty:100, price: this.menus.length ? this.menus[0].price : 0, addons: []}],
                 date:'', time:'', note:'', dp:0, ongkir:0, payMethod:'Transfer'
             };
         },
@@ -308,7 +338,15 @@ document.addEventListener('alpine:init', () => {
                        : rawPhone.startsWith('62') ? rawPhone
                        : '62' + rawPhone;
 
-            let itemsText = (po.items || []).map(i => `- ${i.qty}x ${i.menu} (@Rp ${this.format(i.price || 0)})`).join('\n');
+            let itemsText = (po.items || []).map(i => {
+                let text = `- ${i.qty}x ${i.menu} (@Rp ${this.format(i.price || 0)})`;
+                if (i.addons && i.addons.length > 0) {
+                    i.addons.forEach(a => {
+                        text += `\n  + ${a.name} (@Rp ${this.format(a.price || 0)})`;
+                    });
+                }
+                return text;
+            }).join('\n');
             let total = po.total || this.calculateTotal(po);
             let ongkir = po.ongkir || po.shipping_fee || 0;
             let dp = po.dp || 0;

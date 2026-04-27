@@ -65,16 +65,37 @@ class OrderService
                 if ($menu) {
                     $qty = (int) ($item['qty'] ?? 1);
                     $price = $menu->selling_price;
-                    $itemSubtotal = $qty * $price;
+                    
+                    // Calculate addons
+                    $addonsPrice = 0;
+                    $selectedAddons = [];
+                    if (!empty($item['addons'])) {
+                        foreach ($item['addons'] as $adData) {
+                            $mAddon = \App\Models\MenuAddon::where('user_id', Auth::id())->find($adData['id']);
+                            if ($mAddon) {
+                                $addonsPrice += $mAddon->price;
+                                $selectedAddons[] = $mAddon;
+                            }
+                        }
+                    }
+
+                    $itemSubtotal = $qty * ($price + $addonsPrice);
                     $subtotal += $itemSubtotal;
 
-                    OrderItem::create([
+                    $orderItem = OrderItem::create([
                         'order_id' => $order->id,
                         'menu_id' => $menu->id,
                         'quantity' => $qty,
                         'price' => $price,
                         'subtotal' => $itemSubtotal,
                     ]);
+
+                    foreach ($selectedAddons as $mAddon) {
+                        $orderItem->addons()->create([
+                            'menu_addon_id' => $mAddon->id,
+                            'price' => $mAddon->price,
+                        ]);
+                    }
                 }
             }
         }
@@ -100,7 +121,7 @@ class OrderService
     public function getAllOrders()
     {
         return Order::where('user_id', Auth::id())
-            ->with(['items.menu'])
+            ->with(['items.menu', 'items.addons.menuAddon'])
             ->latest()
             ->get();
     }
@@ -115,7 +136,7 @@ class OrderService
     public function getOrderById($id)
     {
         return Order::where('user_id', Auth::id())
-            ->with(['items.menu'])
+            ->with(['items.menu', 'items.addons.menuAddon'])
             ->findOrFail($id);
     }
 
@@ -133,7 +154,21 @@ class OrderService
                 if ($menu) {
                     $qty = (int) ($item['qty'] ?? 1);
                     $price = $menu->selling_price;
-                    $itemSubtotal = $qty * $price;
+                    
+                    // Calculate addons
+                    $addonsPrice = 0;
+                    $selectedAddons = [];
+                    if (!empty($item['addons'])) {
+                        foreach ($item['addons'] as $adData) {
+                            $mAddon = \App\Models\MenuAddon::where('user_id', Auth::id())->find($adData['id']);
+                            if ($mAddon) {
+                                $addonsPrice += $mAddon->price;
+                                $selectedAddons[] = $mAddon;
+                            }
+                        }
+                    }
+
+                    $itemSubtotal = $qty * ($price + $addonsPrice);
                     $subtotal += $itemSubtotal;
                     $newItems[] = [
                         'order_id' => $order->id,
@@ -141,6 +176,7 @@ class OrderService
                         'quantity' => $qty,
                         'price' => $price,
                         'subtotal' => $itemSubtotal,
+                        'addons' => $selectedAddons
                     ];
                 }
             }
@@ -174,8 +210,18 @@ class OrderService
 
         // Replace items
         $order->items()->delete();
-        foreach ($newItems as $item) {
-            \App\Models\OrderItem::create($item);
+        foreach ($newItems as $itemData) {
+            $addons = $itemData['addons'] ?? [];
+            unset($itemData['addons']);
+            
+            $orderItem = \App\Models\OrderItem::create($itemData);
+            
+            foreach ($addons as $mAddon) {
+                $orderItem->addons()->create([
+                    'menu_addon_id' => $mAddon->id,
+                    'price' => $mAddon->price,
+                ]);
+            }
         }
 
         return $order;

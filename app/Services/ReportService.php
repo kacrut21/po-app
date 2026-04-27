@@ -70,7 +70,7 @@ class ReportService
         ];
     }
 
-    private function getDateRange($period)
+    public function getDateRange($period)
     {
         return match ($period) {
             'last_month' => [

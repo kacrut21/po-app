@@ -13,13 +13,23 @@ class MenuService
      */
     public function getAllMenus($activeOnly = false)
     {
-        $query = Menu::where('user_id', Auth::id())->with('ingredients');
+        $query = Menu::where('user_id', Auth::id())->with(['ingredients']);
         
         if ($activeOnly) {
             $query->where('is_active', true);
         }
 
         return $query->latest()->get();
+    }
+
+    /**
+     * Get all active addons for the user
+     */
+    public function getAllAddons()
+    {
+        return \App\Models\MenuAddon::where('user_id', Auth::id())
+            ->where('is_active', true)
+            ->get();
     }
 
     /**
@@ -130,5 +140,50 @@ class MenuService
         $menu->ingredients()->sync($pivotData);
 
         return $menu;
+    }
+
+    /**
+     * Sync Master Add-ons for the user
+     */
+    public function syncMasterAddons(array $data)
+    {
+        $user = Auth::user();
+
+        if (isset($data['addons']) && is_array($data['addons'])) {
+            $user->addons()->delete();
+
+            foreach ($data['addons'] as $addon) {
+                if (empty($addon['name'])) continue;
+                
+                $user->addons()->create([
+                    'name' => $addon['name'],
+                    'price' => (int) ($addon['price'] ?? 0),
+                    'is_active' => true,
+                ]);
+            }
+        }
+
+        return $user->load('addons');
+    }
+
+    /**
+     * Store a single master addon
+     */
+    public function storeMasterAddon(array $data)
+    {
+        return \App\Models\MenuAddon::create([
+            'user_id' => Auth::id(),
+            'name' => $data['name'],
+            'price' => (int) ($data['price'] ?? 0),
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Delete a master addon
+     */
+    public function deleteMasterAddon($id)
+    {
+        return \App\Models\MenuAddon::where('user_id', Auth::id())->findOrFail($id)->delete();
     }
 }
