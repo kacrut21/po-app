@@ -8,7 +8,7 @@ use App\Http\Controllers\AuthController;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-    
+
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/form-po', [\App\Http\Controllers\OrderController::class, 'store'])->name('form-po.store');
     Route::get('/form-po/{id}/edit', [\App\Http\Controllers\OrderController::class, 'edit'])->name('form-po.edit');
     Route::post('/form-po/{id}/update', [\App\Http\Controllers\OrderController::class, 'update'])->name('form-po.update');
-    Route::match(['post','patch'], '/pesanan/{id}/status', [\App\Http\Controllers\OrderController::class, 'updateStatus'])->name('pesanan.status');
+    Route::match(['post', 'patch'], '/pesanan/{id}/status', [\App\Http\Controllers\OrderController::class, 'updateStatus'])->name('pesanan.status');
     Route::delete('/pesanan/{id}', [\App\Http\Controllers\OrderController::class, 'destroy'])->name('pesanan.destroy');
     Route::post('/pesanan/{id}/pembayaran', [\App\Http\Controllers\OrderController::class, 'updatePayment'])->name('pesanan.pembayaran');
 
