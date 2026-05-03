@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar - OrderIn')
+@section('title', 'Daftar - PO-Management by CuanPilot')
 
 @section('content')
     <div class="mb-8">
@@ -26,7 +26,11 @@
             <input type="text" name="registration_token" value="{{ old('registration_token') }}" required autofocus
                 class="block w-full px-5 py-3.5 bg-violet-50 border border-violet-200 rounded-xl text-[13px] font-bold text-violet-800 placeholder-violet-300 focus:bg-white focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all uppercase tracking-widest"
                 placeholder="XXXX-XXXX">
-            <p class="text-[10px] text-gray-500 mt-1.5 font-medium">Masukkan kode lisensi yang Anda dapatkan setelah pembelian di Lynk.id.</p>
+            <p class="text-[10px] text-gray-500 mt-1.5 font-medium leading-relaxed">
+                Untuk mendapatkan token uji coba (Starter Pack), silakan hubungi Admin via 
+                <a href="https://wa.me/6287825530343?text=Halo%20Admin,%20saya%20mau%20minta%20token%20uji%20coba%20untuk%20daftar%20PO-Management%20dong" 
+                   target="_blank" class="text-violet-600 font-bold hover:underline">WhatsApp Admin</a>.
+            </p>
         </div>
 
         <div class="mb-4">

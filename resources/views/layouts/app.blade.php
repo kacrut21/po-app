@@ -8,11 +8,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="OrderIn">
-    <title>OrderIn — PO Management App</title>
+    <meta name="apple-mobile-web-app-title" content="PO-Management by CuanPilot">
+    <meta name="turbo-cache-control" content="no-cache">
+    <title>PO-Management by CuanPilot — PO Management App</title>
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" href="/LOGO 2.png">
+    <link rel="apple-touch-icon" href="/LOGO 2.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,8 +77,9 @@
                 </svg>
                 {{ $item['label'] }}
                 @if($item['route'] === 'pesanan')
-                    <span class="ml-auto text-[10px] font-bold bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full"
-                          x-text="poData.filter(p=>p.status!=='selesai').length"></span>
+                    <span class="ml-auto text-[10px] font-bold bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full">
+                        {{ Auth::user()->orders->whereNotIn('order_status', ['selesai'])->count() }}
+                    </span>
                 @endif
             </a>
             @endforeach
@@ -180,6 +182,12 @@ document.addEventListener('alpine:init', () => {
         showDetailModal: false,
         activePo: null,
         notifications: [],
+        cur: new URLSearchParams(window.location.search).get('status') || 'masuk',
+
+        statusPercent(po) {
+            const idx = {masuk: 20, konfirmasi: 40, produksi: 60, siap: 80, selesai: 100};
+            return idx[po.status] || 0;
+        },
 
         notify(message, type='success') {
             const id = Date.now();
@@ -208,36 +216,46 @@ document.addEventListener('alpine:init', () => {
         masterAddons: [],
 
         init() {
-            // Prefer server-side data if injected (from PHP controller via Blade)
+            this.syncData();
+            
+            document.addEventListener('turbo:load', () => {
+                this.syncData();
+            });
+
+            window.addEventListener('status-change', (e) => {
+                this.cur = e.detail;
+            });
+        },
+
+        syncData() {
             if (window.__poData) {
                 this.poData = window.__poData;
-            } else {
-                const savedPo = localStorage.getItem('poData');
-                this.poData = savedPo ? JSON.parse(savedPo) : [];
             }
 
             if (window.__menus) {
                 this.menus = window.__menus;
             } else {
-                const savedMenus = localStorage.getItem('menus');
-                this.menus = savedMenus ? JSON.parse(savedMenus) : [];
+                try {
+                    const savedMenus = localStorage.getItem('menus');
+                    this.menus = savedMenus ? JSON.parse(savedMenus) : [];
+                } catch(e) { this.menus = []; }
             }
 
             if (window.__addons) {
                 this.masterAddons = window.__addons;
             }
 
-            // Pre-fill form for edit mode if data is injected
+            const params = new URLSearchParams(window.location.search);
+            const status = params.get('status');
+            if (status) this.cur = status;
+
             if (window.__editOrder) {
-                this.$nextTick(() => {
-                    this.isEditing = true;
-                    this.formPo = window.__editOrder;
-                });
+                this.isEditing = true;
+                this.formPo = window.__editOrder;
             }
         },
 
         saveData() {
-            localStorage.setItem('poData',  JSON.stringify(this.poData));
             localStorage.setItem('menus', JSON.stringify(this.menus));
         },
 
@@ -495,19 +513,19 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then((reg) => {
-                console.log('[OrderIn] SW registered:', reg.scope);
+                console.log('[PO-Management by CuanPilot] SW registered:', reg.scope);
 
                 // Cek apakah ada update SW baru
                 reg.addEventListener('updatefound', () => {
                     const newSW = reg.installing;
                     newSW.addEventListener('statechange', () => {
                         if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('[OrderIn] Update tersedia, refresh untuk mendapatkan versi terbaru.');
+                            console.log('[PO-Management by CuanPilot] Update tersedia, refresh untuk mendapatkan versi terbaru.');
                         }
                     });
                 });
             })
-            .catch((err) => console.error('[OrderIn] SW failed:', err));
+            .catch((err) => console.error('[PO-Management by CuanPilot] SW failed:', err));
     });
 }
 
@@ -527,7 +545,7 @@ window.addEventListener('appinstalled', () => {
     const btn = document.getElementById('pwa-install-btn');
     if (btn) btn.classList.add('hidden');
     deferredPrompt = null;
-    console.log('[OrderIn] App berhasil diinstall!');
+    console.log('[PO-Management by CuanPilot] App berhasil diinstall!');
 });
 
 // Fungsi global untuk trigger install
@@ -536,7 +554,7 @@ window.installPWA = () => {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choice) => {
         if (choice.outcome === 'accepted') {
-            console.log('[OrderIn] User menerima install');
+            console.log('[PO-Management by CuanPilot] User menerima install');
         }
         deferredPrompt = null;
     });

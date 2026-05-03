@@ -34,6 +34,13 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+            if (!$user->is_active) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Akun Anda belum aktif. Silakan hubungi Admin untuk aktivasi.',
+                ])->onlyInput('email');
+            }
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
@@ -69,10 +76,17 @@ class AuthController extends Controller
             ])->onlyInput('registration_token', 'name', 'email');
         }
 
+        // Tentukan limit berdasarkan tipe token
+        $orderLimit = ($token->type === 'lifetime') ? -1 : 10;
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'store_name' => $validated['store_name'],
+            'plan' => $token->type,
+            'is_active' => true,
+            'order_limit' => $orderLimit,
         ]);
 
         // Tandai token sudah dipakai

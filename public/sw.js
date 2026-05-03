@@ -1,5 +1,5 @@
-const CACHE_NAME = 'orderin-v1.0.5';
-const STATIC_CACHE = 'orderin-static-v1';
+const CACHE_NAME = 'cuanpilot-v1.0.5';
+const STATIC_CACHE = 'cuanpilot-static-v1';
 
 // Assets yang di-cache saat install
 const PRECACHE_URLS = [

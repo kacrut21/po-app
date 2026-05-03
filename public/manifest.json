@@ -1,6 +1,6 @@
 {
-    "name": "OrderIn — PO Management",
-    "short_name": "OrderIn",
+    "name": "PO-Management by CuanPilot — PO Management",
+    "short_name": "PO-Management by CuanPilot",
     "description": "Kelola Pre-Order bisnis kuliner dengan mudah dan cepat.",
     "start_url": "/",
     "scope": "/",

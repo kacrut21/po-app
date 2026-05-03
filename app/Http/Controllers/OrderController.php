@@ -69,6 +69,18 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
+        // Cek limit transaksi untuk paket Starter
+        if ($user->order_limit !== -1) {
+            $currentOrderCount = $user->orders()->count();
+            if ($currentOrderCount >= $user->order_limit) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['limit' => 'Batas transaksi paket Starter (10 pesanan) telah tercapai. Silakan upgrade ke Paket Lifetime untuk transaksi tanpa batas.']);
+            }
+        }
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'nullable|string|max:50',

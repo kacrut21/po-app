@@ -8,8 +8,8 @@ use Illuminate\Console\Command;
 use App\Models\RegistrationToken;
 use Illuminate\Support\Str;
 
-#[Signature('orderin:generate-tokens {count=10 : Jumlah token yang ingin dibuat}')]
-#[Description('Men-generate kode lisensi pendaftaran untuk OrderIn')]
+#[Signature('cuanpilot:generate-tokens {count=10 : Jumlah token yang ingin dibuat}')]
+#[Description('Men-generate kode lisensi pendaftaran untuk PO-Management by CuanPilot')]
 class GenerateTokens extends Command
 {
     /**
@@ -22,7 +22,7 @@ class GenerateTokens extends Command
 
         $tokens = [];
         for ($i = 0; $i < $count; $i++) {
-            $token = 'ORDERIN-' . strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4));
+            $token = 'CUANPILOT-' . strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4));
             
             RegistrationToken::create([
                 'token' => $token,

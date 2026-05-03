@@ -4,7 +4,28 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\AuthController;
 
-// Guest Routes
+// Guest & Public Routes
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('landing');
+});
+
+Route::get('/beli', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('checkout');
+})->name('checkout');
+Route::post('/beli', [\App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
+
+// SECRET MONITORING ACCESS (Tanpa Login)
+Route::get('/kukanganonim', [\App\Http\Controllers\SecretMonitoringController::class, 'index']);
+Route::post('/kukanganonim/toggle/{id}', [\App\Http\Controllers\SecretMonitoringController::class, 'toggleStatus']);
+Route::post('/kukanganonim/upgrade/{id}', [\App\Http\Controllers\SecretMonitoringController::class, 'upgrade']);
+Route::delete('/kukanganonim/delete/{id}', [\App\Http\Controllers\SecretMonitoringController::class, 'delete']);
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -20,7 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profil/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/pesanan', [\App\Http\Controllers\OrderController::class, 'index'])->name('pesanan');
 

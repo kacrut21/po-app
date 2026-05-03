@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk - OrderIn')
+@section('title', 'Masuk - PO-Management by CuanPilot')
 
 @section('content')
     <div class="mb-8">

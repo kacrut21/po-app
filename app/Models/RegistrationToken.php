@@ -8,6 +8,7 @@ class RegistrationToken extends Model
 {
     protected $fillable = [
         'token',
+        'type',
         'is_used',
         'used_by',
         'used_at',

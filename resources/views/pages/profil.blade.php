@@ -229,7 +229,7 @@
     </form>
 
     <div class="text-center pt-2 pb-6 opacity-50">
-        <p class="text-[11px] text-gray-500 font-extrabold tracking-widest uppercase">OrderIn v1.0.5</p>
+        <p class="text-[11px] text-gray-500 font-extrabold tracking-widest uppercase">PO-Management by CuanPilot v1.0.5</p>
     </div>
 
 </div>

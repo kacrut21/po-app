@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>@yield('title', 'OrderIn — PO Management')</title>
+    <link rel="icon" type="image/png" href="/LOGO 2.png">
+    <title>@yield('title', 'PO-Management by CuanPilot — PO Management')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,14 +32,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
             </div>
-            <h1 class="text-white text-4xl font-extrabold tracking-tight mb-4">OrderIn.</h1>
+            <h1 class="text-white text-4xl font-extrabold tracking-tight mb-4">PO-Management by CuanPilot.</h1>
             <p class="text-violet-200 text-lg font-medium max-w-sm leading-relaxed">
                 Platform manajemen Pre-Order terbaik. Kelola pesanan, hitung HPP, dan pantau bisnis dari satu tempat.
             </p>
         </div>
 
         <div class="relative z-10">
-            <p class="text-violet-300 text-sm font-semibold">&copy; {{ date('Y') }} OrderIn. Dirancang untuk UMKM.</p>
+            <p class="text-violet-300 text-sm font-semibold">&copy; {{ date('Y') }} PO-Management by CuanPilot. Dirancang untuk UMKM.</p>
         </div>
     </div>
 

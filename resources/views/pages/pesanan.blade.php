@@ -71,23 +71,7 @@
     <script>
         window.__poData = @json($orders);
     </script>
-    <div x-data='{
-                        cur: new URLSearchParams(window.location.search).get("status") || "masuk",
-                        init() {
-                            const params = new URLSearchParams(window.location.search);
-                            const status = params.get("status");
-                            if (status) {
-                                this.cur = status;
-                                this.$nextTick(() => {
-                                    window.dispatchEvent(new CustomEvent("status-change", { detail: status }));
-                                });
-                            }
-                        },
-                        statusPercent(po) {
-                            const idx = {masuk: 20, konfirmasi: 40, produksi: 60, siap: 80, selesai: 100};
-                            return idx[po.status] || 0;
-                        }
-                    }' @status-change.window="cur=$event.detail" class="px-4 md:px-6 pb-4 pt-4 md:pt-6">
+    <div @status-change.window="cur=$event.detail" class="px-4 md:px-6 pb-4 pt-4 md:pt-6">
 
         @if(session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
