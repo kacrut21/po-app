@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="/Logo 1.png">
+    <link rel="icon" type="image/png" href="/logo-cuanpilot.png">
     <title>Checkout Lifetime — PO-Management by CuanPilot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -25,7 +25,7 @@
     <nav class="bg-white border-b border-slate-100 py-3 px-4 sticky top-0 z-50">
         <div class="max-w-xl mx-auto flex justify-between items-center">
             <a href="/" class="flex items-center gap-3">
-                <img src="/Logo 1.png" alt="CuanPilot Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: contain;">
+                <img src="/logo-cuanpilot.png" alt="CuanPilot Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: contain;">
                 <div style="line-height: 1">
                     <span style="color: #1e293b; font-size: 15px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">PO-Management</span><br>
                     <span style="color: #6C3DE3; font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">by CuanPilot</span>

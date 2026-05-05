@@ -348,14 +348,14 @@
     .sticky-dot { width: 6px; height: 6px; }
   }
 </style>
-<link rel="icon" type="image/png" href="/Logo 1.png">
+<link rel="icon" type="image/png" href="/logo-cuanpilot.png">
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav>
   <a href="#" class="nav-logo">
-    <img src="/Logo 1.png" alt="CuanPilot Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: contain;">
+    <img src="/logo-cuanpilot.png" alt="CuanPilot Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: contain;">
     <div style="line-height: 1">
       <span style="color: white; font-size: 15px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">PO-Management</span><br>
       <span style="color: rgba(255,255,255,0.6); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">by CuanPilot</span>
@@ -741,7 +741,7 @@
 <footer>
   <div class="footer-inner">
     <a href="#" class="nav-logo">
-      <img src="/Logo 1.png" alt="CuanPilot Logo" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain;">
+      <img src="/logo-cuanpilot.png" alt="CuanPilot Logo" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain;">
       <div style="line-height: 1">
         <span style="color: white; font-size: 15px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">PO-Management</span><br>
         <span style="color: rgba(255,255,255,0.6); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">by CuanPilot</span>
