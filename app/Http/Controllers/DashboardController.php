@@ -61,11 +61,15 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
+        // Total counts for onboarding logic
+        $totalOrders = Order::where('user_id', $userId)->count();
+        $totalMenus = Menu::where('user_id', $userId)->count();
+
         return view('pages.dashboard', compact(
             'omzetBulanIni', 'omzetGrowth',
             'activeOrders', 'selesaiBulanIni',
             'upcoming', 'avgMargin',
-            'recentOrders'
+            'recentOrders', 'totalOrders', 'totalMenus'
         ));
     }
 }

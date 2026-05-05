@@ -67,11 +67,7 @@
 @endsection
 
 @section('content')
-    {{-- Inject server-side data into global JS window object --}}
-    <script>
-        window.__poData = @json($orders);
-    </script>
-    <div @status-change.window="cur=$event.detail" class="px-4 md:px-6 pb-4 pt-4 md:pt-6">
+    <div x-data="{ localOrders: @js($orders) }" x-init="poData = localOrders" @status-change.window="cur=$event.detail" class="px-4 md:px-6 pb-4 pt-4 md:pt-6">
 
         @if(session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"

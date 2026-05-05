@@ -16,40 +16,35 @@
 
 @section('content')
     {{-- Inject menus and edit order data --}}
-    <script>
-        window.__menus = {!! json_encode($menus->map(fn($m) => array_merge($m->toArray(), [
-            'price' => $m->selling_price
-        ]))) !!};
-        window.__addons = {!! json_encode($addons) !!};
-        @isset($order)
-            window.__editOrder = {
-                id: {{ $order->id }},
-                name: {!! json_encode($order->customer_name) !!},
-                wa: {!! json_encode($order->customer_phone ?? '') !!},
-                address: {!! json_encode($order->delivery_address ?? '') !!},
-                event: {!! json_encode($order->event_type ?? 'Aqiqah') !!},
-                date: {!! json_encode(substr($order->delivery_date, 0, 10)) !!},
-                time: {!! json_encode(substr($order->delivery_date, 11, 5)) !!},
-                note: {!! json_encode($order->notes ?? '') !!},
-                ongkir: {{ $order->shipping_fee ?? 0 }},
-                dp: {{ $order->down_payment ?? 0 }},
-                payMethod: {!! json_encode($order->payment_method ?? 'Cash') !!},
-                items: {!! json_encode($order->items->map(fn($i) => [
-                    'menu' => $i->menu?->name ?? '', 
-                    'qty' => $i->quantity, 
+    <form method="POST" action="{{ isset($order) ? route('form-po.update', $order->id) : route('form-po.store') }}"
+        x-data="{
+            localMenus: @js($menus->map(fn($m) => array_merge($m->toArray(), ['price' => $m->selling_price]))),
+            localAddons: @js($addons),
+            localEditOrder: @js(isset($order) ? [
+                'id' => $order->id,
+                'name' => $order->customer_name,
+                'wa' => $order->customer_phone ?? '',
+                'address' => $order->delivery_address ?? '',
+                'event' => $order->event_type ?? 'Aqiqah',
+                'date' => substr($order->delivery_date, 0, 10),
+                'time' => substr($order->delivery_date, 11, 5),
+                'note' => $order->notes ?? '',
+                'ongkir' => $order->shipping_fee ?? 0,
+                'dp' => $order->down_payment ?? 0,
+                'payMethod' => $order->payment_method ?? 'Cash',
+                'items' => $order->items->map(fn($i) => [
+                    'menu' => $i->menu?->name ?? '',
+                    'qty' => $i->quantity,
                     'price' => $i->price,
                     'addons' => $i->addons->map(fn($a) => [
                         'id' => $a->menu_addon_id,
                         'name' => $a->menuAddon?->name ?? 'Addon Terhapus',
                         'price' => $a->price
                     ])->values()
-                ])) !!}
-            };
-        @else
-            window.__editOrder = null;
-        @endisset
-    </script>
-    <form method="POST" action="{{ isset($order) ? route('form-po.update', $order->id) : route('form-po.store') }}"
+                ])
+            ] : null)
+        }"
+        x-init="menus = localMenus; masterAddons = localAddons; if (localEditOrder) { isEditing = true; formPo = localEditOrder; } else { resetForm(); }"
         class="p-4 space-y-4 pb-24 md:pb-6"
         @submit="if(menus.length === 0 || formPo.items.length === 0) { $event.preventDefault(); alert('Mohon tambahkan setidaknya satu menu pesanan. Jika belum ada menu, silakan buat di Katalog Menu terlebih dahulu.'); return false; }">
         @csrf

@@ -27,8 +27,8 @@
                 class="block w-full px-5 py-3.5 bg-violet-50 border border-violet-200 rounded-xl text-[13px] font-bold text-violet-800 placeholder-violet-300 focus:bg-white focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all uppercase tracking-widest"
                 placeholder="XXXX-XXXX">
             <p class="text-[10px] text-gray-500 mt-1.5 font-medium leading-relaxed">
-                Untuk mendapatkan token uji coba (Starter Pack), silakan hubungi Admin via 
-                <a href="https://wa.me/6287825530343?text=Halo%20Admin,%20saya%20mau%20minta%20token%20uji%20coba%20untuk%20daftar%20PO-Management%20dong" 
+                Untuk mendapatkan token uji coba (Starter Pack), silakan hubungi Admin via
+                <a href="https://wa.me/6287825530343?text=Halo%20Admin,%20saya%20mau%20minta%20token%20uji%20coba%20untuk%20daftar%20PO-Management%20dong"
                    target="_blank" class="text-violet-600 font-bold hover:underline">WhatsApp Admin</a>.
             </p>
         </div>
@@ -46,7 +46,11 @@
                 class="block w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all"
                 placeholder="email@toko.com">
         </div>
-
+        <div class="mb-4">
+            <label class="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Nama Toko</label>
+            <input type="text" name="store_name" value="{{ old('store_name') }}" placeholder="Misal: Catering Berkah"
+                    class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-violet-500 focus:bg-white transition-all">
+        </div>
         <div class="mb-4">
             <label class="block text-xs font-bold text-gray-700 mb-2">Password</label>
             <input type="password" name="password" required

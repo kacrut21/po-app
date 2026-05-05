@@ -1,5 +1,5 @@
-const CACHE_NAME = 'cuanpilot-v1.0.5';
-const STATIC_CACHE = 'cuanpilot-static-v1';
+const CACHE_NAME = 'cuanpilot-v1.0.6';
+const STATIC_CACHE = 'cuanpilot-static-v1.1';
 
 // Assets yang di-cache saat install
 const PRECACHE_URLS = [
@@ -59,7 +59,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(
-        fetch(event.request)
+        fetch(event.request, { cache: 'no-store' })
             .then((networkResponse) => {
                 // Simpan salinan ke cache untuk fallback offline
                 if (networkResponse && networkResponse.status === 200) {

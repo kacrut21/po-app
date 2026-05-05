@@ -14,9 +14,14 @@
 <div class="bg-white px-5 pt-5 pb-3">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-base font-bold text-gray-800">
-                {{ Auth::user()->store_name ?: 'Halo, '.Auth::user()->name }}
-            </h1>
+            <div class="flex items-center gap-2">
+                <h1 class="text-base font-bold text-gray-800">
+                    {{ Auth::user()->store_name ?: 'Halo, '.Auth::user()->name }}
+                </h1>
+                @if(Auth::check() && Auth::user()->plan === 'starter')
+                    <button @click="showUpgradeModal = true" class="px-2 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-extrabold rounded-md shadow-sm hover:scale-105 transition-transform tracking-wider">FREE</button>
+                @endif
+            </div>
             <p class="text-[11px] font-medium text-gray-500 mt-0.5">{{ now()->translatedFormat('l, d F Y') }}</p>
         </div>
         {{-- Profile Button --}}
@@ -30,6 +35,87 @@
 
 @section('content')
 <div class="px-4 md:px-8 space-y-4 pt-2 pb-4 max-w-5xl mx-auto">
+
+    <!-- ─── ONBOARDING FLOW ─── -->
+    @if($totalOrders === 0)
+    <div x-data="{ showOnboarding: localStorage.getItem('hide_onboarding') !== 'true' }" x-show="showOnboarding" style="display: none;" class="mb-2">
+        <div class="bg-white rounded-[16px] p-5 shadow-[0_8px_20px_-6px_rgba(108,61,227,0.15)] border border-violet-100 relative overflow-hidden">
+            <!-- Decoration -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-violet-50 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h2 class="text-[15px] font-extrabold text-gray-800">Selamat datang di OrderIn! 🎉</h2>
+                        <p class="text-[11px] font-medium text-gray-500 mt-1 leading-relaxed">Mari siapkan aplikasi kamu dalam 2 langkah mudah agar siap menerima orderan pertamamu.</p>
+                    </div>
+                    <button @click="localStorage.setItem('hide_onboarding', 'true'); showOnboarding = false" class="text-[10px] font-bold text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-colors shrink-0">
+                        Lewati
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Step 1: Menu -->
+                    @if($totalMenus === 0)
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-violet-100 bg-violet-50/50">
+                            <div class="w-9 h-9 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-violet-100 text-violet-600 font-extrabold text-[13px]">
+                                1
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-[12px] font-bold text-gray-800">Buat Katalog Menu</h3>
+                                <p class="text-[10px] text-gray-500 font-medium">Tambahkan produk/menu yang kamu jual.</p>
+                            </div>
+                            <a href="{{ route('menu') }}" class="px-3 py-1.5 bg-[#6C3DE3] hover:bg-violet-700 text-white text-[11px] font-bold rounded-lg shadow-sm transition-colors shrink-0">
+                                Buat Menu
+                            </a>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-emerald-100 bg-emerald-50/50 opacity-90">
+                            <div class="w-9 h-9 shrink-0 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-[12px] font-bold text-gray-800 line-through">Buat Katalog Menu</h3>
+                                <p class="text-[10px] text-emerald-600 font-bold">{{ $totalMenus }} menu berhasil ditambahkan! 🎉</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Step 2: Order -->
+                    @if($totalMenus === 0)
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 opacity-75">
+                            <div class="w-9 h-9 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 text-gray-400 font-extrabold text-[13px]">
+                                2
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-[12px] font-bold text-gray-600">Buat Pesanan Pertama</h3>
+                                <p class="text-[10px] text-gray-400 font-medium">Catat orderan dari pelangganmu.</p>
+                            </div>
+                            <button disabled class="px-3 py-1.5 bg-gray-200 text-gray-400 text-[11px] font-bold rounded-lg cursor-not-allowed shrink-0">
+                                Terkunci
+                            </button>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-violet-100 bg-violet-50/50">
+                            <div class="w-9 h-9 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-violet-100 text-violet-600 font-extrabold text-[13px]">
+                                2
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-[12px] font-bold text-gray-800">Buat Pesanan Pertama</h3>
+                                <p class="text-[10px] text-gray-500 font-medium">Catat orderan masuk pertamamu sekarang.</p>
+                            </div>
+                            <a href="{{ route('form-po') }}" class="px-3 py-1.5 bg-[#6C3DE3] hover:bg-violet-700 text-white text-[11px] font-bold rounded-lg shadow-sm transition-colors shrink-0 animate-pulse">
+                                Buat Order
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- ─── HERO CARD OMZET ─── -->
     <div class="gradient-violet rounded-xl p-5 text-white relative overflow-hidden shadow-[0_8px_20px_-6px_rgba(108,61,227,0.5)]">
